@@ -1,0 +1,7 @@
+{
+  "name":"creatoriq","private":true,"version":"0.1.0","type":"module",
+  "scripts":{"dev":"vite","build":"vite build","server":"node server/index.js","start":"concurrently -k \"npm:server\" \"npm:dev -- --host 0.0.0.0\"","test":"node --test tests/*.test.js"},
+  "dependencies":{"@vitejs/plugin-react":"latest","concurrently":"latest","cors":"latest","dotenv":"latest","express":"latest","lucide-react":"latest","mongoose":"latest","react":"latest","react-dom":"latest","react-router-dom":"latest","recharts":"latest"},
+  "devDependencies":{"autoprefixer":"latest","postcss":"latest","tailwindcss":"^3.4.17","vite":"latest"}
+}
+

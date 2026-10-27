@@ -1,0 +1,1 @@
+export function requireDatabase(model){return(_req,res,next)=>{if(model?.db?.readyState===1)return next();res.status(503).json({success:false,error:{code:'DATABASE_UNAVAILABLE',message:'MongoDB is not connected. Check MONGODB_URI and database network access; no data was saved.'}})}}

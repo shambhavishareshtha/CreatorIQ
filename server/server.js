@@ -1,0 +1,47 @@
+import express from 'express';
+import cors from 'cors';
+import { CreatorProfile } from './models/CreatorProfile.js';
+import { Post } from './models/Post.js';
+import { ContentExperiment } from './models/ContentExperiment.js';
+import { PlannedContent } from './models/PlannedContent.js';
+import { Account } from './models/Account.js';
+import { UserSession } from './models/UserSession.js';
+import { profileController } from './controllers/profileController.js';
+import { postController } from './controllers/postController.js';
+import { experimentController } from './controllers/experimentController.js';
+import { plannedContentController } from './controllers/plannedContentController.js';
+import { hookController } from './controllers/hookController.js';
+import { profileRoutes } from './routes/profileRoutes.js';
+import { postRoutes } from './routes/postRoutes.js';
+import { experimentRoutes } from './routes/experimentRoutes.js';
+import { plannedContentRoutes } from './routes/plannedContentRoutes.js';
+import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { requireDatabase } from './middleware/requireDatabase.js';
+import { analyticsController } from './controllers/analyticsController.js';
+import { analyticsRoutes } from './routes/analyticsRoutes.js';
+import { sessionMiddleware, requireAuth, requireCsrf } from './middleware/auth.js';
+import { authController } from './controllers/authController.js';
+import { authRoutes } from './routes/authRoutes.js';
+
+export function createServer(overrides = {}) {
+ const models={Profile:CreatorProfile,Post,Experiment:ContentExperiment,PlannedContent,Account,Session:UserSession,...overrides};
+ const app=express();
+ const origins=(process.env.CORS_ORIGINS||'').split(',').map(x=>x.trim()).filter(Boolean);
+ if(!origins.length&&process.env.NODE_ENV==='production') throw new Error('CORS_ORIGINS must contain the deployed frontend origin in production.');
+ const allowed=new Set(origins.length?origins:['http://localhost:5173','http://127.0.0.1:5173']);
+ app.use(cors({credentials:true,origin(origin,cb){if(!origin||allowed.has(origin))return cb(null,true);return cb(new Error('Origin is not allowed by CORS.'));}}));
+ app.use(express.json({limit:'2mb'}));
+ app.get('/api/health',(_q,r)=>r.json({success:true,data:{status:'ok',persistence:models.Profile.db?.readyState===1}}));
+ app.use('/api/auth',sessionMiddleware(models),authRoutes(authController(models),requireCsrf(models)));
+ app.use('/api',sessionMiddleware(models));
+ app.use('/api',requireAuth);
+ app.use('/api', (req,res,next)=>['GET','HEAD','OPTIONS'].includes(req.method)?next():requireCsrf(models)(req,res,next));
+ app.use('/api/profile',requireDatabase(models.Profile),profileRoutes(profileController(models.Profile)));
+ app.use('/api/onboarding',requireDatabase(models.Profile),profileRoutes(profileController(models.Profile)));
+ app.use('/api/posts',(req,res,next)=>req.path==='/import/preview'?next():requireDatabase(models.Post)(req,res,next),postRoutes(postController(models)));
+ app.use('/api/analytics',requireDatabase(models.Post),analyticsRoutes(analyticsController(models)));
+ app.post('/api/hooks/generate',hookController(models));
+ app.use('/api/planned-content',requireDatabase(models.PlannedContent),plannedContentRoutes(plannedContentController(models)));
+ app.use('/api/experiments',requireDatabase(models.Experiment),experimentRoutes(experimentController(models)));
+ app.use(notFound);app.use(errorHandler);return{app,models};
+}

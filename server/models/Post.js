@@ -1,0 +1,5 @@
+import mongoose from 'mongoose';
+const schema=new mongoose.Schema({creator:{type:mongoose.Schema.Types.ObjectId,ref:'CreatorProfile',required:true,index:true},platform:{type:String,enum:['X','Instagram'],required:true},caption:{type:String,trim:true,required:true,maxlength:5000},publishedAt:{type:Date,required:true,index:true},format:{type:String,trim:true,required:true,maxlength:80},topic:{type:String,trim:true,maxlength:120,default:''},views:{type:Number,min:0,default:undefined},impressions:{type:Number,min:0,default:undefined},likes:{type:Number,min:0,default:undefined},comments:{type:Number,min:0,default:undefined},shares:{type:Number,min:0,default:undefined},saves:{type:Number,min:0,default:undefined},importKey:{type:String,select:false}},{timestamps:true});
+schema.index({creator:1,importKey:1},{unique:true,partialFilterExpression:{importKey:{$type:'string'}}});schema.index({creator:1,platform:1,format:1,topic:1,publishedAt:-1});
+export const Post=mongoose.models.Post||mongoose.model('Post',schema);
+
