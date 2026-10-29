@@ -2,6 +2,8 @@
 
 CreatorIQ is an editorial creator intelligence studio. Dashboard preview figures remain clearly labeled sample data; the Analytics and Creator DNA screens use imported Post records only. No in-memory substitute is used for persistent storage.
 
+video link: https://drive.google.com/file/d/1xfs1r47-_T0PYJQVnyZ_UpbpAKFQPfBP/view?usp=sharing
+
 ## Requirements and setup
 
 - Node.js 20.19+ or 22.12+ and npm.
